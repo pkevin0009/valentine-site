@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#050108" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Will You Be Mine?</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root{--primary:#ff7aa2;--bg:#050108;--card:#1a0610}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Poppins',sans-serif;background:radial-gradient(circle at top,#260613,var(--bg));color:#fff;min-height:100svh;display:flex;align-items:center;justify-content:center;overflow-x:hidden;overflow-y:auto;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+
+    /* floating hearts */
+    .hearts{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+    .heart{position:absolute;bottom:-20px;font-size:14px;opacity:.6;animation:float 12s linear infinite}
+    @keyframes float{0%{transform:translateY(0);opacity:0}10%{opacity:.6}100%{transform:translateY(-110vh);opacity:0}}
+
+    .screen{display:none;width:100%;max-width:420px;padding:22px;text-align:center;position:relative;z-index:2}
+    .screen.active{display:block}
+
+    .card{background:linear-gradient(180deg,#2b0a17,var(--card));border-radius:24px;padding:26px;box-shadow:0 30px 60px rgba(0,0,0,.6)}
+
+    h1,h2{font-family:'Italiana',serif;letter-spacing:1px;margin-bottom:12px}
+    p{font-size:14px;opacity:.9;line-height:1.6}
+
+    .btn{border:none;border-radius:999px;padding:12px 24px;font-size:14px;cursor:pointer;transition:.3s ease}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-secondary{background:#333;color:#ddd}
+
+    .choice-wrap{display:flex;justify-content:center;gap:16px;margin-top:18px;position:relative}
+
+    .products{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+    .product{background:#2a0b16;border-radius:14px;padding:14px 8px;font-size:12px;cursor:pointer}
+
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:.3s;z-index:1}
+    .overlay.active{opacity:1;pointer-events:auto}
+
+    .gallery-wrap{background:linear-gradient(180deg,#3b0f20,#1a0610);border-radius:20px;padding:18px}
+
+    .timeline{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;cursor:grab}
+    .timeline:active{cursor:grabbing}
+    .timeline::-webkit-scrollbar{display:none}
+
+    .timeline-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .timeline-btn{background:#2a0b16;border:none;color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer}
+
+    .moment{min-width:240px;scroll-snap-align:center;text-align:center}
+    .moment h4{margin:10px 0 6px;font-size:14px;font-weight:500}
+    .moment p{font-size:12px;opacity:.85;line-height:1.5}
+    .timeline::-webkit-scrollbar{display:none}
+    .moment{min-width:240px;scroll-snap-align:center;text-align:center}
+    .moment h4{margin:10px 0 6px;font-size:14px;font-weight:500}
+    .moment p{font-size:12px;opacity:.85;line-height:1.5}
+    .gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .polaroid{background:#fff;border-radius:6px;padding:8px;transition:transform .25s ease}
+    .polaroid:nth-child(odd){transform:rotate(-3.2deg)}
+    .polaroid:nth-child(even){transform:rotate(3deg)}
+    .polaroid:nth-child(3n){transform:rotate(-2.2deg)}
+    .polaroid:hover{transform:rotate(0deg) scale(1.05)}
+    .polaroid img{width:100%;border-radius:4px;cursor:pointer}
+    .polaroid span{display:block;margin-top:6px;font-size:11px;color:#333;font-family:'Italiana',serif}
+
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.95);display:none;align-items:center;justify-content:center;z-index:999}
+    .lightbox.active{display:flex}
+    .lightbox img{max-width:92%;max-height:92%}
+    .lb-close{position:absolute;top:18px;right:22px;font-size:34px;cursor:pointer}
+  </style>
+</head>
+<body>
+
+<div class="hearts" id="hearts"></div>
+<div class="overlay" id="overlay"></div>
+<audio id="bgMusic" src="music.mp3" loop playsinline></audio>
+
+<div class="screen active" id="screen1">
+  <div class="card">
+    <h1 id="typeText"></h1>
+    <p>A promise written by destiny, waiting for your yes.</p>
+    <div class="choice-wrap">
+      <button id="yesBtn" class="btn btn-primary">YES</button>
+      <button id="noBtn" class="btn btn-secondary">NO</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screen2">
+  <div class="card">
+    <h2>Happy Valentine's Day 💗</h2>
+    <p>You are my favorite part of every day, you're the first person I want to tell everything to, the place where my heart feels most at home.</p>
+    <p>You make ordinary days feel safe and meaningful and even on my worst days, just by knowing you’re there changes everything. With you, life feels steadier, warmer and more real.</p>
+    <p>I’m endlessly grateful for your smile, your patience, your love and the quiet ways you make my world brighter just by being in it. I can’t wait to build more memories with you in future, step by step, hand in hand and choosing each other every day!</p>
+    <button class="btn btn-primary" onclick="goTo('screen3')">Continue</button>
+  </div>
+</div>
+
+<div class="screen" id="screen3">
+  <div class="card">
+    <h2>Something for You</h2>
+    <div class="products">
+      <div class="product" onclick="openModal('gallery')">📸<br>Our Gallery</div>
+      <div class="product" onclick="openModal('story')">🕰️<br>Moments Timeline</div>
+      <div class="product" onclick="openModal('letter')">💌<br>My Heart</div>
+    </div>
+    <button class="btn btn-primary" style="margin-top:18px" onclick="goTo('screen4')">Finally</button>
+  </div>
+</div>
+
+<div class="screen" id="screen4">
+  <div class="card">
+    <h2>I love you ❤️</h2>
+    <p>Not just today. Not just forever. In every lifetime.</p>
+    <button class="btn btn-primary" style="margin-top:18px" onclick="shareYes()">Share Yes 💖</button>
+  </div>
+</div>
+
+<div class="screen" id="gallery">
+  <div class="card gallery-wrap">
+    <h2>Memories 💞</h2>
+    <div class="gallery-grid">
+      <div class="polaroid"><img src="photos/img1.jpg"><span>Sweet Hello</span></div>
+      <div class="polaroid"><img src="photos/img2.jpg"><span>True Smile</span></div>
+      <div class="polaroid"><img src="photos/img3.jpg"><span>Perfect Day</span></div>
+      <div class="polaroid"><img src="photos/img4.jpg"><span>Us</span></div>
+      <div class="polaroid"><img src="photos/img5.jpg"><span>Forever</span></div>
+      <div class="polaroid"><img src="photos/img6.jpg"><span>Always</span></div>
+      <div class="polaroid"><img src="photos/img7.jpg"><span>That Look</span></div>
+      <div class="polaroid"><img src="photos/img8.jpg"><span>My Safe Place</span></div>
+      <div class="polaroid"><img src="photos/img9.jpg"><span>Endless Laughs</span></div>
+      <div class="polaroid"><img src="photos/img10.jpg"><span>Just Us</span></div>
+      <div class="polaroid"><img src="photos/img11.jpg"><span>Forever</span></div>
+    </div>
+    <button class="btn btn-secondary" style="margin-top:18px" onclick="closeModal()">← Back</button>
+  </div>
+</div>
+
+<div class="screen" id="story">
+  <div class="card gallery-wrap">
+    <div class="timeline-nav">
+      <button class="timeline-btn" onclick="scrollTimeline(-1)">‹</button>
+      <h2>Moments Timeline 🕰️</h2>
+      <button class="timeline-btn" onclick="scrollTimeline(1)">›</button>
+    </div>
+
+    <div class="timeline">
+      <div class="moment">
+        <div class="polaroid">
+          <img src="photos/m1.jpg">
+          <span>The day Fate Introduced Us</span>
+        </div>
+        <h4>Where it all began</h4>
+        <p>24th June 2024. When we met unexpectedly. A simple hello that quietly changed everything. 
+           This was the moment that neighter of us planned but destiny clearly did.</p>
+      </div>
+
+      <div class="moment">
+        <div class="polaroid">
+          <img src="photos/m2.jpg">
+          <span>Just You & Me</span>
+        </div>
+        <h4>Misunderstanding made us to meet</h4>
+        <p>Our first time alone at CSB and quite conversaions, and memorable bike ride to Alembic City that always make us laugh</p>
+      </div>
+
+      <div class="moment">
+        <div class="polaroid">
+          <img src="photos/m3.jpg">
+          <span>First Cafe Date</span>
+        </div>
+        <h4>Coffee, Laughter and Chaos</h4>
+        <p>A simple cafe outing as friends, becoming more comfortable with each other, sharing food and knowing more about each other</p>
+      </div>
+
+      <div class="moment">
+        <div class="polaroid">
+          <img src="photos/m4.jpg">
+          <span>Firstever Movie Date</span>
+        </div>
+        <h4>Lights Dimmed, Hearts Lit</h4>
+        <p>Our first movie together, where the screen played one story and I began another</p>
+      </div>
+
+      <div class="moment">
+        <div class="polaroid">
+          <img src="photos/m5.jpg">
+          <span>The best ever Navratri</span>
+        </div>
+        <h4>Dancing through Our First Navratri</h4>
+        <p>Colors, music and us. Celebrating our first navratri hand in hand</p>
+      </div>
+
+      <div class="moment">
+        <div class="polaroid">
+          <img src="photos/m6.jpg">
+          <span>Trip to Pavaghadh</span>
+        </div>
+        <h4>A short trip, A big memory</h4>
+        <p>Our first little escape together, where every view felt better and journey became enjoyable because you were there.</p>
+      </div>
+
+      <div class="moment">
+        <div class="polaroid">
+          <img src="photos/m7.jpg">
+          <span>The New Year Eve</span>
+        </div>
+        <h4>Getting close with each other</h4>
+        <p>The night we welcomed a New year together. A 31st night filled with laughter, pictures and promises unspoken</p>
+      </div>
+      
+      
+      <div class="moment">
+        <div class="polaroid">
+          <img src="photos/m8.jpg">
+          <span>Our first big advanture</span>
+        </div>
+        <h4>Goaa</h4>
+        <p>Our first big advanture. Sun, sea and Us. Our first ever trip as couple and thousands of memories in one place which stays forever.</p>
+      </div>
+      
+      <div class="moment">
+        <div class="polaroid">
+          <img src="photos/m9.jpg">
+          <span>My Favorite Day of the Year</span>
+        </div>
+        <h4>My Favorite Day of the Year</h4>
+        <p>Your Birthday! A day thay exist just to celebrate you and the happiness ou bring into my life</p>
+      </div>
+      
+      <div class="moment">
+        <div class="polaroid">
+          <img src="photos/m10.jpg">
+          <span>Smile before the distance began</span>
+        </div>
+        <h4>Smile before the distance began</h4>
+        <p>A moment before LDR, holding onto company before miles tried to separate us</p>
+      </div>
+    </div>
+
+    <button class="btn btn-secondary" style="margin-top:18px" onclick="closeModal()">← Back</button>
+  </div>
+</div>
+
+<div class="screen" id="letter">
+  <div class="card">
+    <h2>From My Heart 💌</h2>
+    <p>I wasn't the handsome one...</p>
+    <p> Nor did I have an athletic build.</p>
+    <p> </p>
+    <p>I was an average guy...</p>
+    <p>Trying to do my best in everything....</p>
+    <p> </p>
+    <p>Yet you liked me..</p>
+    <p>You said I was kind and honest....</p>
+    <p>And that only a few can stay real.</p>
+    <p> </p>
+    <p>I stumbled while loving you,</p>
+    <p>Hurt you when I never meant to,</p>
+    <p>Yet you forgave me, again and again</p>
+    <p>That’s when I saw what true love is....</p>
+    <p> </p>
+    <p>So if I ever make a mistake to love you</p>
+    <p>In the way you deserve,</p>
+    <p>Please don’t give up on me.</p>
+    <p> </p>
+    <p>I may not be easy to love,</p>
+    <p>But I love you with all that I am.</p>
+    <p></p>
+    <p>I did.</p>
+    <p>I do.</p>
+    <p>And I always will. ❤️</p>
+    <button class="btn btn-secondary" style="margin-top:18px" onclick="closeModal()">← Back</button>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox">
+  <span class="lb-close" onclick="closeLightbox()">×</span>
+  <img id="lbImage" />
+</div>
+
+<script>
+// Lightbox
+const lb=document.getElementById('lightbox');
+const lbImg=document.getElementById('lbImage');
+document.querySelectorAll('.polaroid img').forEach(img=>{
+  img.addEventListener('click',()=>{
+    lbImg.src=img.src;
+    lb.classList.add('active');
+  });
+});
+function closeLightbox(){lb.classList.remove('active');}
+
+// Navigation
+const screens=document.querySelectorAll('.screen');
+function goTo(id){screens.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function openModal(id){document.getElementById('overlay').classList.add('active');goTo(id);}
+function closeModal(){document.getElementById('overlay').classList.remove('active');goTo('screen3');}
+
+// Typewriter
+const text="Will you be my Valentine forever, Avanti?";
+let i=0;const el=document.getElementById('typeText');
+(function type(){if(i<text.length){el.textContent+=text[i++];setTimeout(type,90);}})();
+
+// Buttons
+const yesBtn=document.getElementById('yesBtn');
+const noBtn=document.getElementById('noBtn');
+const bgMusic=document.getElementById('bgMusic');
+let scale=1;
+noBtn.onclick=()=>{scale+=0.15;yesBtn.style.transform=`scale(${scale})`;};
+yesBtn.onclick=()=>{bgMusic.play().catch(()=>{});goTo('screen2');};
+
+function shareYes(){const msg="She said YES 💍❤️";if(navigator.share){navigator.share({text:msg,url:location.href});}else{alert(msg);}}
+
+// Hearts
+const hearts=document.getElementById('hearts');
+const chars=['❤','💗','💖','💞'];
+for(let i=0;i<22;i++){
+  const h=document.createElement('span');
+  h.className='heart';
+  h.textContent=chars[Math.floor(Math.random()*chars.length)];
+  h.style.left=Math.random()*100+'%';
+  h.style.animationDelay=Math.random()*10+'s';
+  hearts.appendChild(h);
+}
+// Timeline arrows + mouse drag
+const timeline=document.querySelector('.timeline');
+let isDown=false,startX,scrollLeft;
+
+timeline.addEventListener('mousedown',e=>{
+  isDown=true;startX=e.pageX-timeline.offsetLeft;scrollLeft=timeline.scrollLeft;
+});
+window.addEventListener('mouseup',()=>isDown=false);
+window.addEventListener('mousemove',e=>{
+  if(!isDown) return;
+  e.preventDefault();
+  const x=e.pageX-timeline.offsetLeft;
+  const walk=(x-startX)*1.5;
+  timeline.scrollLeft=scrollLeft-walk;
+});
+
+function scrollTimeline(dir){
+  const card=timeline.querySelector('.moment');
+  timeline.scrollBy({left:dir*(card.offsetWidth+18),behavior:'smooth'});
+}
+
+</script>
+</body>
+</html>
